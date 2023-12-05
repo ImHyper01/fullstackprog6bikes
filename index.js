@@ -3,11 +3,11 @@ const express = require("express");
 //create webserver
 const app = express();
 
+const bikeRouter = require("./routers/bikeRouter");
 
 //creating routes
-app.get("/", (req, res) => {
-    res.send("hello world");
-})
+app.use("/bikes/", bikeRouter);
+
 
 
 //webserver started on port 8000
