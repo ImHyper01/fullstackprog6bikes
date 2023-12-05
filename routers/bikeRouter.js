@@ -5,39 +5,52 @@ const router = express.Router();
 const Bike = require("../models/bikeModel");
 
 
-//create route
+//create route with pagination
 router.get("/", async (req, res) => {
-    console.log("GET")
-    try {
-        let bikes = await Bike.find();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
 
-        let bikeCollection = {
-            model: bikes,
+    try {
+        const totalBikes = await Bike.countDocuments();
+        const totalPages = Math.ceil(totalBikes / limit);
+
+        const skip = (page - 1) * limit;
+
+        const bikes = await Bike.find()
+            .skip(skip)
+            .limit(limit);
+
+        const bikeCollection = {
+            bikes,
+            pageInfo: {
+                currentPage: page,
+                totalPages,
+                totalItems: totalBikes,
+                itemsPerPage: limit
+            },
             _links: {
                 self: {
-                    href: `${process.env.BASE_URI}bikes/`
+                    href: `${process.env.BASE_URI}bikes/?page=${page}&limit=${limit}`
                 },
                 collection: {
                     href: `${process.env.BASE_URI}bikes/`
                 }
-            },
-            pagination: "dit is een test kijken of het werkt"
-        }
+            }
+        };
 
         res.json(bikeCollection);
-    } catch {
-        //no response to db
-        res.status(500).send;
+    } catch (error) {
+        res.status(500).send(error.message);
     }
-})
+});
 
 //create router for detail
-router.get("/:id", async (req, res) => {
+router.get("/:_id", async (req, res) => {
     //find(_id)
-    console.log(`GET request for detail ${req.params.id}`);
+    console.log(`GET request for detail ${req.params._id}`);
 
     try {
-        let bikes = await Bike.findById(req.params.id);
+        let bikes = await Bike.findById(req.params._id);
 
         res.json(bikes);
     } catch {
@@ -68,6 +81,7 @@ router.post("/",  (req, res, next ) => {
 
 });
 
+//POST route
 router.post("/", async (req, res) => {
     console.log("POST")
 
@@ -85,7 +99,51 @@ router.post("/", async (req, res) => {
 
 })
 
+//middlewear checking headers put
+router.put("/_id", (req, res, next) => {
+    console.log("middleware to check content type")
 
+    if (req.header("Content-Type") !== "application/json" && req.header("Content-Type") !== "application/x-www-form-urlencoded"){
+
+        res.status(400).send();
+
+    } else {
+        next();
+    }
+})
+
+//middleware checking empty values put
+router.put("/_id", (req, res, next) => {
+    console.log("middleware to check empty value")
+
+    if (req.body.model && req.body.brand && req.body.options) {
+        next();
+    } else {
+        res.status(400).send();
+    }
+
+})
+
+//PUT route
+router.put("/_id", async (req, res) => {
+
+    let bike = await Bike.findOneAndUpdate(req.params,
+        {
+            model: req.body.model,
+            brand: req.body.brand,
+            options: req.body.options
+        })
+
+    try {
+        bike.save();
+
+        res.status(200).send();
+    } catch {
+        res.status(500).send;
+    }
+})
+
+//Delete items
 router.delete("/:_id", async (req, res) => {
     console.log("DELETE")
 
@@ -101,6 +159,13 @@ router.delete("/:_id", async (req, res) => {
 router.options("/", (req, res) => {
     res.setHeader("Allow", "GET, POST, OPTIONS");
     res.send();
+})
+
+router.options("/:id", async (req, res) => {
+    console.log("OPTIONS (Details)");
+
+    res.setHeader('Allow', 'GET, PUT, DELETE, OPTIONS')
+    res.send()
 })
 
 
