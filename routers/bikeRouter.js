@@ -11,12 +11,20 @@ router.get("/", async (req, res) => {
     try {
         let bikes = await Bike.find();
 
-        let bikeConnection = {
+        let bikeCollection = {
             model: bikes,
-
+            _links: {
+                self: {
+                    href: `${process.env.BASE_URI}bikes/`
+                },
+                collection: {
+                    href: `${process.env.BASE_URI}bikes/`
+                }
+            },
+            pagination: "dit is een test kijken of het werkt"
         }
 
-        res.json(bikes);
+        res.json(bikeCollection);
     } catch {
         //no response to db
         res.status(500).send;
