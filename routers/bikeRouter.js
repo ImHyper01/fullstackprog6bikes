@@ -2,40 +2,44 @@
 const express = require("express");
 const router = express.Router();
 
-let items = [
-    {
-        model: "Chopper",
-        brand: "Harley davidson",
-    },
-    {
-        model: "Ninja",
-        brand: "Kawasaki",
-    },
-    {
-        model: "Racer",
-        brand: "Ducati",
-    }
-
-]
+const Bike = require("../models/bikeModel");
 
 
 //create route
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
     console.log("GET")
-    res.json(items);
+    try {
+        let bikes = await Bike.find();
+        res.json(bikes);
+    } catch {
+        res.status(500).send;
+    }
 })
 
 //create router for detail
 router.get("/:id", (req, res) => {
+    //find(_id)
     console.log("GET")
     res.send(`detail for one bike = ${req.params.id}`);
 })
 
 
-
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
     console.log("POST")
-    res.send("hello world");
+
+    let bike = new Bike({
+        model: "Chopper",
+        brand: "Harley davidson",
+        options: "Max out",
+    })
+    try {
+        await bike.save();
+
+        res.json(bike);
+    } catch {
+        res.status(500).send;
+    }
+
 })
 
 
