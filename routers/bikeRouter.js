@@ -28,9 +28,9 @@ router.post("/", async (req, res) => {
     console.log("POST")
 
     let bike = new Bike({
-        model: "Chopper",
-        brand: "Harley davidson",
-        options: "Max out",
+        model: "Racer",
+        brand: "Ducati",
+        options: "Super",
     })
     try {
         await bike.save();
