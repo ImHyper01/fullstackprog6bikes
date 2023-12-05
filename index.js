@@ -1,4 +1,13 @@
 const express = require("express");
+
+
+//load env file
+require("dotenv").config();
+
+//Test env file
+console.log(process.env.BASE_URI);
+
+//setup data connection
 const mongoose = require("mongoose");
 
 //create database and connect

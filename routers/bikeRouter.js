@@ -10,8 +10,15 @@ router.get("/", async (req, res) => {
     console.log("GET")
     try {
         let bikes = await Bike.find();
+
+        let bikeConnection = {
+            model: bikes,
+
+        }
+
         res.json(bikes);
     } catch {
+        //no response to db
         res.status(500).send;
     }
 })
