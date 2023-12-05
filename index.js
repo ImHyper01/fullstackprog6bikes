@@ -1,5 +1,5 @@
 const express = require("express");
-
+const bodyParser = require('body-parser');
 
 //load env file
 require("dotenv").config();
@@ -21,6 +21,13 @@ db.on("error", console.error.bind(console, "MongoDB connection error:"));
 
 //create webserver
 const app = express();
+
+//use bodyparser middleware to parse x-form-www-urlencoded
+app.use(bodyParser.urlencoded({extended: true}));
+//use bodyparser middleware to parse json data
+app.use(bodyParser.json({ type: 'application/json'}))
+
+
 
 const bikeRouter = require("./routers/bikeRouter");
 

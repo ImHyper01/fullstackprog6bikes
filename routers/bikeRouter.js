@@ -32,25 +32,53 @@ router.get("/", async (req, res) => {
 })
 
 //create router for detail
-router.get("/:id", (req, res) => {
+router.get("/:id", async (req, res) => {
     //find(_id)
-    console.log("GET")
-    res.send(`detail for one bike = ${req.params.id}`);
+    console.log(`GET request for detail ${req.params.id}`);
+
+    try {
+        let bikes = await Bike.findById(req.params.id);
+
+        res.json(bikes);
+    } catch {
+        res.status(404).send();
+    }
+
 })
 
+router.post("/",  (req, res, next ) => {
+    console.log("POST middleware to check content-type")
+
+    if (req.header("Content-Type") === "application/json") {
+        next();
+    } else {
+        res.status(415).send();
+    }
+});
+
+//add middleware to disallow empty values
+router.post("/",  (req, res, next ) => {
+    console.log("POST middleware to check empty values")
+
+    if (req.body.model && req.body.brand && req.body.options) {
+        next();
+    } else {
+        res.status(400).send();
+    }
+
+});
 
 router.post("/", async (req, res) => {
     console.log("POST")
 
     let bike = new Bike({
-        model: "Racer",
-        brand: "Ducati",
-        options: "Super",
+        model: req.body.model,
+        brand: req.body.brand,
+        options: req.body.options,
     })
     try {
         await bike.save();
-
-        res.json(bike);
+        res.status(201).send;
     } catch {
         res.status(500).send;
     }
@@ -58,15 +86,21 @@ router.post("/", async (req, res) => {
 })
 
 
-router.delete("/", (req, res) => {
+router.delete("/:_id", async (req, res) => {
     console.log("DELETE")
-    res.send("hello world");
+
+    try {
+        await Bike.findByIdAndDelete(req.params._id);
+        res.status(204).send();
+    } catch {
+        res.status(404).send
+    }
 })
 
 
 router.options("/", (req, res) => {
-    console.log("OPTIONS")
-    res.send("hello world");
+    res.setHeader("Allow", "GET, POST, OPTIONS");
+    res.send();
 })
 
 
