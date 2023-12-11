@@ -7,41 +7,35 @@ const Bike = require("../models/bikeModel");
 
 //create route with pagination
 router.get("/", async (req, res) => {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    console.log("GET");
+
+    if(req.header('Accept') !== "application/json"){
+        res.status(415).send();
+    }
 
     try {
-        const totalBikes = await Bike.countDocuments();
-        const totalPages = Math.ceil(totalBikes / limit);
+        let bikes = await Bike.find();
 
-        const skip = (page - 1) * limit;
-
-        const bikes = await Bike.find()
-            .skip(skip)
-            .limit(limit);
-
-        const bikeCollection = {
-            bikes,
-            pageInfo: {
-                currentPage: page,
-                totalPages,
-                totalItems: totalBikes,
-                itemsPerPage: limit
-            },
+        let bikeCollection = {
+            items: bikes,
             _links: {
                 self: {
-                    href: `${process.env.BASE_URI}bikes/?page=${page}&limit=${limit}`
+                    href: `${process.env.BASE_URI}bikes/`
                 },
                 collection: {
                     href: `${process.env.BASE_URI}bikes/`
                 }
+            },
+            pagination: {
+                temp: "hier komt de pagination"
             }
-        };
-
+        }
         res.json(bikeCollection);
-    } catch (error) {
-        res.status(500).send(error.message);
+
+    } catch {
+        res.status(500).send();
     }
+
 });
 
 //create router for detail
@@ -92,6 +86,7 @@ router.post("/", async (req, res) => {
     })
     try {
         await bike.save();
+
         res.status(201).send;
     } catch {
         res.status(500).send;
