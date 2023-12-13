@@ -5,7 +5,7 @@ const router = express.Router();
 const Bike = require("../models/bikeModel");
 
 
-//create route with pagination
+//create route
 router.get("/", async (req, res) => {
     console.log("GET");
 
@@ -15,8 +15,8 @@ router.get("/", async (req, res) => {
 
     try {
         let bikes = await Bike.find();
-
-        let bikeCollection = {
+        // Representation for the collection
+        let bikesCollection = {
             items: bikes,
             _links: {
                 self: {
@@ -27,39 +27,45 @@ router.get("/", async (req, res) => {
                 }
             },
             pagination: {
-                temp: "hier komt de pagination"
+                temp: "Hier komt de pagination."
             }
         }
-        res.json(bikeCollection);
-
+        res.setHeader("Access-Control-Allow-Origin", '*');
+        res.setHeader("Access-Control-Allow-Headers", 'example-request');
+        res.setHeader("Access-Control-Allow-Method", 'GET, POST, OPTIONS');
+        res.json(bikesCollection);
     } catch {
         res.status(500).send();
     }
-
-});
+})
 
 //create router for detail
 router.get("/:_id", async (req, res) => {
-    //find(_id)
-    console.log(`GET request for detail ${req.params._id}`);
 
     try {
-        let bikes = await Bike.findById(req.params._id);
+        let bike = await Bike.findById(req.params._id)
+        if (bike == null) {
+            res.status(404).send();
+        } else {
 
-        res.json(bikes);
+            res.setHeader("Access-Control-Allow-Origin", '*');
+            res.setHeader("Access-Control-Allow-Headers", 'example-request');
+            res.setHeader("Access-Control-Allow-Method", 'GET, PUT, DELETE, OPTIONS');
+            res.json(bike)
+        }
+
     } catch {
-        res.status(404).send();
+        res.status(415).send();
     }
-
 })
 
 router.post("/",  (req, res, next ) => {
     console.log("POST middleware to check content-type")
 
-    if (req.header("Content-Type") === "application/json") {
-        next();
-    } else {
+    if (req.header("Content-Type") !== "application/json" && req.header("Content-Type") !== "application/x-www-form-urlencoded") {
         res.status(415).send();
+    } else {
+        next();
     }
 });
 
@@ -94,9 +100,9 @@ router.post("/", async (req, res) => {
 
 })
 
-//middlewear checking headers put
+//middelwear checking headers put
 router.put("/_id", (req, res, next) => {
-    console.log("middleware to check content type")
+    console.log("put: middleware to check content type")
 
     if (req.header("Content-Type") !== "application/json" && req.header("Content-Type") !== "application/x-www-form-urlencoded"){
 
@@ -109,7 +115,7 @@ router.put("/_id", (req, res, next) => {
 
 //middleware checking empty values put
 router.put("/_id", (req, res, next) => {
-    console.log("middleware to check empty value")
+    console.log("put: middleware to check empty value")
 
     if (req.body.model && req.body.brand && req.body.options) {
         next();
@@ -156,8 +162,8 @@ router.options("/", (req, res) => {
     res.send();
 })
 
-router.options("/:id", async (req, res) => {
-    console.log("OPTIONS (Details)");
+router.options("/:_id", async (req, res) => {
+    console.log("OPTIONS for Details");
 
     res.setHeader('Allow', 'GET, PUT, DELETE, OPTIONS')
     res.send()
