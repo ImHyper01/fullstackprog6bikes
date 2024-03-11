@@ -13,13 +13,13 @@ const mongoose = require("mongoose");
 //create connection
 mongoose.connect("mongodb://127.0.0.1:27017/bikes")
 
-const cors = require("cors");
+// const cors = require("cors");
 
 //create webserver
 const app = express();
 
 //use cors
-app.use(cors());
+// app.use(cors());
 
 //use bodyparser middleware to parse x-form-www-urlencoded
 app.use(bodyParser.urlencoded({extended: false}));
